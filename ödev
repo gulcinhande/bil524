@@ -1,0 +1,223 @@
+#birinci bölüm 
+
+install.packages("MASS") #veri seti oluşturmak için paket
+library(MASS) #veri seti oluşturmak için kütüphane
+
+#veri seti oluşturma aşamaları
+
+set.seed(123) #tekrarlanabilirlik için
+n<-100 #gözlem sayısı tanımlanıyor
+
+x1 <- rnorm(n, mean=15, sd=2) #birinci bağımsız değişken  
+x2 <- rnorm(n, mean=32, sd=3) #ikinci bağımsız değişken
+x3 <- rnorm(n, mean=100, sd=0.5) #üçüncü bağımsız değişken  
+x4 <- rnorm(n, mean=49, sd=1) #dördüncü bağımsız değişken
+x5 <- rnorm(n, mean=13, sd=0.7) #beşinci bağımsız değişken
+
+View(x1) #birinci bağımsız değişken 100 tane double değerden oluşuyor
+View(x2) #ikinci bağımsız değişken 100 tane double değerden oluşuyor
+View(x3) #üçüncü bağımsız değişken 100 tane double değerden oluşuyor
+View(x4) #dördüncü bağımsız değişken 100 tane double değerden oluşuyor
+View(x5) #beşinci bağımsız değişken 100 tane double değerden oluşuyor
+
+sort(x1) #birinci bağımsız değişken sıralanıyor
+sort(x2) #ikinci bağımsız değişken sıralanıyor
+sort(x3) #üçüncü bağımsız değişken sıralanıyor
+sort(x4) #dördüncü bağımsız değişken sıralanıyor
+sort(x5) #beşinci bağımsız değişken sıralanıyor
+
+#bağımlı değişken tanımlanıyor:
+y<- -100+ 5*x1 +3*x2+x3-2*x4+1.5*x5+rnorm(n, mean=0, sd=1)
+
+View(y) #bağımlı değişken 100 double değerden oluşuyor
+
+#veri seti, veri çerçevesine dönüştürülüyor:
+
+veri <- data.frame(y,x1, x2, x3,x4,x5)
+
+#Faktor ve numeric'e dönüşüm:
+
+set.seed(123)
+n<-100
+a<-rnorm(n,mean=3,sd=1)
+b<-rnorm(n,mean=7, sd=0.5)
+c<-rnorm(n,mean=1+3*a+1.5*b, sd=1.5)
+
+#factor'e dönüşüm ve tür kontrolü:
+a_faktor <- as.factor(a)
+str(a_faktor)
+str(a)
+
+#numeric'e dönüşüm ve tür kontrolü
+b_numeric <- as.numeric(b)
+str(b_numeric)
+str(b)
+
+
+#veri kalitesi /eksik tespiti ve doldurma
+set.seed(123)
+n1<-10
+eksik1<-rnorm(n1,mean=5,sd=1)
+eksik2<-rnorm(n1,mean=10, sd=3)
+eksiksonuc<-rnorm(n1,5-eksik1+2*eksik2,sd=1)
+
+#eksik tespiti
+is.na(eksik1) #eksik bulunmuyor
+is.na(eksik2) #eksik bulunmuyor
+is.na(eksiksonuc) #eksik bulunmuyor
+
+#eksik bir veriyi ortalama ile doldurmak:
+#eksik1'deki Na değerlerini remove ederek ortalama değer hesaplanıyor
+ort1 <- mean(eksik1, na.rm=T) 
+dold1<-ifelse(is.na(eksik1),
+              ort1, eksik1)
+#dold1 ile eksik1 verisi içindeki NA değer olsaydı o değerlere ortalama atıyor olacaktık.
+
+
+#eksik bir data oluştururak ortalama ataması deneme:
+aa<-c(1,5,7,NA,3,9,11,4,NA)
+orta_aa<-mean(aa,na.rm=T)
+dold_aa<-ifelse(is.na(aa), orta_aa, aa)
+dold_aa==aa #4 ve 9. değerler için ortalama değerler kullanıldığı görülür
+
+
+
+#eksik veriyi na.locf ile doldurma
+
+install.packages("zoo") #zoo paketi 
+library(zoo) #zoo kütüphanesi
+
+w<-c(1,2,4,8,NA,NA,12,25,38,NA) #eksik veri tanımlanıyor
+w_dold<-na.locf(w) #eksik veri na.locf ile dolduruluyor
+print(w_dold)
+w_dold==w #5.değer=8 6.değer=8 ve son değer=38 olarak atandı) 
+
+
+#medyan ile doldurmak:
+
+med<-c(1,4,5,9,10,14,22,NA,NA) #eksik verili data oluşturuldu
+med_med<-median(med,na.rm=T) #eksik verili datanın eksikleri arındırılarak medyanı bulundu
+med_dold<-ifelse(is.na(med),med_med,med) #NA'ları medyan ile doldurma
+med==med_dold #eksik veri ile doldurulmuş verinin son iki değeri farklı
+
+
+#aykırı değer tespiti:
+set.seed(123)
+xx<-rnorm(100) #normal dağılımda 100 double karakterleri data
+boxplot(xx) #xx'in box plot grafiği
+sort(xx) #xx sıralanıyor
+z_puan<-scale(xx)
+aykiri<-abs(z_puan)>3 #aykırı değer mutlak z puanı 3'ten büyük olanlar olacak ancak her bir değer için mutlak değer 3'ten küçük
+aykiri
+
+#alt ve üst çeyrek hesaplama:
+Q1<-quantile(xx,0.25)
+Q3<-quantile(xx,0.75)
+
+
+#alt ve üst sınır belirleme:
+IQR<-Q3-Q1
+alt<-Q1-1.5*IQR
+
+ust<-Q3+1.5*IQR
+
+aykiri <- xx < alt | xx > ust
+
+hist(xx) #histogram
+boxplot(xx) #box plot
+qqnorm(xx) #qq plot
+
+qqline(xx) #qq plot
+summary(xx) #xx datasının özeti
+
+x_<-rnorm(100)
+y_<-2*x_+rnorm(100,mean=1,sd=2)
+
+cor<-cor(x_,y_) #korelasyon
+print(cor)
+
+#çoklu regresoyn
+set.seed(123) #tekrarlanabilirlik için
+n<-100 #gözlem sayısı tanımlanıyor
+
+x6 <- rnorm(n, mean=15, sd=2) #birinci bağımsız değişken  
+x7 <- rnorm(n, mean=32, sd=3) #ikinci bağımsız değişken
+x8 <- rnorm(n, mean=100, sd=0.5) #üçüncü bağımsız değişken  
+x9 <- rnorm(n, mean=49, sd=1) #dördüncü bağımsız değişken
+x10 <- rnorm(n, mean=13, sd=0.7) #beşinci bağımsız değişken
+
+#bağımlı değişken tanımlanıyor:
+y1<- -100+ 5*x6+3*x7+x8-2*x9+1.5*x10+rnorm(n, mean=0, sd=1)
+
+model<-lm(y1~x6+x7+x8+x9+x10)
+
+summary(model)
+
+
+#customer data ile ödevin ikinci bölümü
+
+install.packages("readxl")
+library(readxl)
+install.packages("readr")
+library(readr)
+install.packages("tidyverse")
+library(tidyverse)
+install.packages("glmnet")
+library(glmnet)
+
+
+veri2<-read_excel("C:/Users/hande/veri.xlsx")  ###bilgisayarda bulunana veriyi çağırdım
+names(veri2) ##veri2 dosyasındaki başlıkların isimleri
+yeni_isimler=paste("i_",1:12, sep="") #i_1'den i_12'ye kadar dizi oluşturmak
+veri2_yeni<-veri2 #başlıkları değiştirmek için veri2yi yeni bir isme daha atamak
+names(veri2_yeni)<-yeni_isimler #oluşturulan datanın başlıklarını yeni isimler ile değiştirmek
+View(veri2)
+View(veri2_yeni)
+
+veri2==veri2_yeni
+
+veri2_df=data.frame(veri2_yeni)
+veri2_tibble=as_tibble(veri2_df)
+head(veri2_tibble)
+
+y2=veri2_tibble[5] ##i5 yani eğitim seviyesini gösteriyor
+
+y3=select(veri2_tibble, i_3, i_4, i_5) #sırasıyla cinsiyet, gelir, eğitim
+x01=subset(veri2_tibble,select = -c(i_3, i_4, i_5)) #cinsiyet, gelir, eğitim sütunları hariç
+x02=veri2_tibble[,c(1:2,6:12)]
+x01==x02
+x01_df=data.frame(x01)
+
+
+all_num<-Filter(is.numeric,veri2_tibble)
+x01_num<-Filter(is.numeric,x01)
+
+is_num_no_na<-function(col){
+  is_numeric<-is.numeric(col)
+  no_na<-!anyNA(col)
+  return(is_numeric & no_na)
+}
+
+num_na_x01<-Filter(is_num_no_na,x01) #cinsiyet, gelir, eğitim sütunları hariç olan veriydi x01
+num_na_all<-Filter(is_num_no_na, all_num)
+
+
+
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("caret")
+library(caret)
+install.packages("corrplot")
+library(corrplot)
+
+##gelir ve harcama tutarlarının grafiği
+
+plt<-ggplot(data=veri2, aes(purchase_amount, income))
+plt+geom_point()
+
+all_used<-num_na_all[,c("i_1","i_2","i_4","i_9","i_11")]
+corr_all_used<-cor(all_used)
+high_corr_all_used<-findCorrelation(corr_all_used,cutoff = 0.7)
+data5li <- select(veri2_df, i_1,i_2,i_4,i_9,i_11)
+corr_mat<-cor(data5li)
+corrplot(corr_mat, method="color")
